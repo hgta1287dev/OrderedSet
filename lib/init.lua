@@ -33,6 +33,7 @@ export type OrderedSet<T> = {
 
 	Has: (self: OrderedSet<T>, val: T) -> boolean,
 	Iter: (self: OrderedSet<T>) -> () -> T?,
+	Each: (self: OrderedSet<T>, func: (T) -> boolean?) -> (),
 	Front: (self: OrderedSet<T>) -> T?,
 	Back: (self: OrderedSet<T>) -> T?,
 
@@ -508,6 +509,30 @@ function OrderedSet.Iter<T>(self: OrderedSet<T>): () -> T?
 		local val = current.value
 		current = current.next
 		return val
+	end
+end
+
+--[=[
+	@param callback (value: T) -> boolean?
+	Calls the callback for each value in the set.
+
+	```lua
+	local OrderedSet = require(path.to.OrderedSet)
+	local set = OrderedSet.new()
+	set:Each(function(v)
+		if v == target then
+			return false -- stop early
+		end
+	end)
+	```
+]=]
+function OrderedSet.Each<T>(self: OrderedSet<T>, callback: (value: T) -> boolean?)
+	local current = self._head
+	while current do
+		if callback(current.value) == false then
+			break
+		end
+		current = current.next
 	end
 end
 
