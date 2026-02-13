@@ -34,6 +34,7 @@ export type OrderedSet<T> = {
 	Has: (self: OrderedSet<T>, val: T) -> boolean,
 	Iter: (self: OrderedSet<T>) -> () -> T?,
 	Each: (self: OrderedSet<T>, func: (T) -> boolean?) -> (),
+	Map: <U>(self: OrderedSet<T>, func: (T) -> U) -> { U },
 	Front: (self: OrderedSet<T>) -> T?,
 	Back: (self: OrderedSet<T>) -> T?,
 
@@ -515,13 +516,25 @@ end
 --[=[
 	@param callback (value: T) -> boolean?
 	Calls the callback for each value in the set.
+	If the callback returns false, iteration stops early.
+
+	Example:
 
 	```lua
 	local OrderedSet = require(path.to.OrderedSet)
-	local set = OrderedSet.new()
+
+	local set = OrderedSet.fromArray({1, 2, 3, 4})
+
+	-- Print all values
 	set:Each(function(v)
-		if v == target then
-			return false -- stop early
+		print(v)
+	end)
+
+	-- Stop early
+	set:Each(function(v)
+		if v == 3 then
+			print("Found 3, stopping")
+			return false -- stop iteration
 		end
 	end)
 	```
@@ -534,6 +547,49 @@ function OrderedSet.Each<T>(self: OrderedSet<T>, callback: (value: T) -> boolean
 		end
 		current = current.next
 	end
+end
+
+--[=[
+	@param func (value: T) -> U
+	@return {U}
+	Returns an array of transformed values from the set.
+
+	Example:
+
+	```lua
+	local OrderedSet = require(path.to.OrderedSet)
+	local set = OrderedSet.fromArray({1, 2, 3})
+
+	-- Square numbers
+	local squared = set:Map(function(v)
+		return v * v
+	end)
+
+	print(squared) -- {1, 4, 9}
+
+	-- Convert Players to UserIds
+	local playerSet = OrderedSet.new()
+	playerSet:PushBack(player1)
+	playerSet:PushBack(player2)
+
+	local userIds = playerSet:Map(function(player)
+		return player.UserId
+	end)
+
+	print(userIds) -- {12345, 67890}
+	```
+
+]=]
+function OrderedSet.Map<T, U>(self: OrderedSet<T>, func: (T) -> U): { U }
+	local result = {}
+	local current = self._head
+
+	while current do
+		table.insert(result, func(current.value))
+		current = current.next
+	end
+
+	return result
 end
 
 -- Stats
