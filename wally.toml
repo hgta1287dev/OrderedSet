@@ -1,6 +1,6 @@
 [package]
 name = "hgta1287dev/ordered-set"
-version = "1.0.2"
+version = "1.0.3"
 authors = ["hoamjg"]
 license = "MIT"
 registry = "https://github.com/UpliftGames/wally-index"
